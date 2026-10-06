@@ -61,6 +61,16 @@ main{max-width:1120px;margin:0 auto;padding:44px 20px 90px}
 .go span:first-child{font-weight:700;color:var(--accent-ink)}
 .go .st{font-size:.9rem;color:var(--muted)}
 .go .st.done{color:var(--good);font-weight:700}
+.prog{margin-top:36px;display:flex;flex-direction:column;gap:16px}
+.prog h2{margin:0 0 2px}
+.pcard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 28px;align-items:center;background:var(--navy);color:#fff;border-radius:10px;padding:22px 26px;text-decoration:none;border-bottom:4px solid var(--accent)}
+.pcard .eyebrow{color:#9CD0F0}
+.pcard h3{margin:4px 0 6px;font-size:1.5rem;color:#fff}
+.pcard p{margin:0;color:#D5E3F0;max-width:70ch}
+.pcard ul{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 22px;color:#D5E3F0;font-size:.95rem}
+.pcard ul b{color:#fff}
+.pcard .pgo{font-weight:700;white-space:nowrap;background:#F6C453;color:#16264A;border-radius:24px;padding:10px 20px}
+@media (max-width:640px){ .pcard{grid-template-columns:minmax(0,1fr)} .pcard .pgo{justify-self:start} }
 .how{margin-top:56px}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:18px;padding:0;list-style:none;counter-reset:s}
 .steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
@@ -81,6 +91,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
     <p>Every lesson opens with a real-world case. You investigate it, learn what is behind it, and then fix it yourself in a simulator. No slides are read to you.</p>
   </section>
   <section class="grid" id="grid" aria-label="Courses"></section>
+  <section class="prog" id="prog" aria-label="Programmes"></section>
   <section class="how">
     <h2>How a lesson works</h2>
     <ol class="steps">
@@ -95,7 +106,8 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 </main>
 <footer>CES Tech Academy · scenarios in the courses are illustrative and do not describe a specific customer.</footer>
 <script>
-const COURSES = [{"id": "aci-tenant-design", "title": "ACI Tenant Design in Practice", "level": "Intermediate", "card": "Decide the tenant and VRF model, set bridge domains, write contracts with the right scope and connect the tenant to the outside world.", "tags": ["Data center", "Cisco ACI"], "order": 1, "lessons": 5, "minutes": 23, "sims": 5, "quiz": 20, "lab": "45 to 60 minutes", "lab_title": "Build a three-tier tenant", "motif": "fabric", "items": 6, "storage_key": "ces-academy-aci-tenant-v1"}, {"id": "sdwan-design", "title": "Cisco SD-WAN Design in Practice", "level": "Intermediate", "card": "Bring a router into the overlay, tame the tunnels, segment and shape the topology, steer applications, plan the rollout. Ends with a narrated lab demonstration and a sandbox lab.", "tags": ["WAN", "Cisco Catalyst SD-WAN"], "order": 2, "lessons": 6, "minutes": 21, "sims": 6, "quiz": 24, "lab": "45 to 60 minutes", "lab_title": "Read the design of a live SD-WAN", "motif": "wan", "items": 7, "storage_key": "ces-academy-sdwan-design-v1"}];
+const COURSES = [{"id": "aci-tenant-design", "title": "ACI Tenant Design in Practice", "level": "Intermediate", "card": "Decide the tenant and VRF model, set bridge domains, write contracts with the right scope and connect the tenant to the outside world.", "tags": ["Data center", "Cisco ACI"], "order": 1, "lessons": 5, "minutes": 23, "sims": 5, "quiz": 20, "lab": "45 to 60 minutes", "lab_title": "Build a three-tier tenant", "motif": "fabric", "items": 6, "storage_key": "ces-academy-aci-tenant-v1"}, {"id": "sdwan-design", "title": "Cisco SD-WAN Design in Practice", "level": "Intermediate", "card": "Bring a router into the overlay, tame the tunnels, segment and shape the topology, steer applications, plan the rollout. Ends with a narrated lab demonstration and a sandbox lab.", "tags": ["WAN", "Cisco Catalyst SD-WAN"], "order": 2, "lessons": 6, "minutes": 21, "sims": 6, "quiz": 24, "lab": "45 to 60 minutes", "lab_title": "Read the design of a live SD-WAN", "motif": "wan", "items": 7, "storage_key": "ces-academy-sdwan-design-v1"}, {"id": "ccna-w06", "title": "CCNA in Practice · Week 6: Let the routers talk", "level": "Foundation", "card": "Single-area OSPF and first hop redundancy, taught on one company network with real router output: neighbours, the designated router, cost, a default route for every site, a health check and a gateway backup.", "tags": ["CCNA 200-301", "OSPF", "HSRP"], "order": 3, "lessons": 7, "minutes": 25, "sims": 7, "quiz": 28, "lab": "50 minutes", "lab_title": "OSPF across three sites", "motif": "routing", "items": 8, "storage_key": "ces-academy-ccna-w06-v1"}];
+const PROGRAMS = [{"id": "ccna", "title": "CCNA in Practice", "strap": "Your first twelve weeks as a network engineer", "exam": "Cisco CCNA 200-301, version 1.1", "state": "Built so far: week 6. The other weeks are designed.", "facts": [[71, "lessons planned"], [7, "built"], [48, "labs on one network"], [6, "performed on real Cisco IOS"], [1, "weekly test ready"]]}];
 /* Small blueprint drawings for the cards, in the same style as the lesson stage. */
 const box = (x, y, w, t) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="34" rx="5" fill="#1F3463" stroke="#9CD0F0" stroke-width="2"/><text x="' + (x + w/2) + '" y="' + (y + 23) + '" text-anchor="middle" fill="#fff" font-size="15" font-family="Carlito,Calibri,sans-serif">' + t + '</text>';
 const ART = {
@@ -103,6 +115,10 @@ const ART = {
   wan: () => { const st = [[60, 190], [230, 216], [400, 216], [560, 190]]; return '<path d="M250,44 q-34,0 -34,28 q0,28 34,28 h180 q34,0 34,-28 q0,-28 -34,-28 q-10,-26 -52,-26 q-40,0 -52,24 q-30,-22 -76,2 z" fill="#1F3463" stroke="#9CD0F0" stroke-width="2"/><text x="340" y="80" text-anchor="middle" fill="#fff" font-size="16" font-family="Carlito,Calibri,sans-serif">MPLS + Internet</text>' +
     st.map((p, i) => '<line x1="' + (p[0] + 40) + '" y1="' + p[1] + '" x2="' + (250 + i * 60) + '" y2="100" stroke="#F6C453" stroke-width="1.8" stroke-dasharray="6 5"/><line x1="' + (p[0] + 52) + '" y1="' + p[1] + '" x2="' + (262 + i * 60) + '" y2="100" stroke="#6FD39A" stroke-width="1.8"/>').join('') + st.map((p, i) => box(p[0], p[1], 92, i === 0 ? 'Data center' : 'Store ' + (i * 16 - 4))).join('') + '<text x="340" y="278" text-anchor="middle" fill="#F6C453" font-size="22" font-family="Kalam,cursive">one overlay, many transports</text>'; }
 };
+ART.routing = () => { const R = [[340, 62], [150, 206], [530, 206]], ln = (a, b, w) => '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#9CD0F0" stroke-width="' + w + '" opacity=".85"/>';
+  return ln(R[0], R[1], 2) + ln(R[0], R[2], 2) + ln(R[1], R[2], 2) + '<line x1="150" y1="206" x2="340" y2="62" stroke="#6FD39A" stroke-width="5"/><line x1="340" y1="62" x2="530" y2="206" stroke="#6FD39A" stroke-width="5"/>' +
+    R.map((p, i) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="26" fill="#1F3463" stroke="#9CD0F0" stroke-width="2.5"/><path d="M' + (p[0] - 14) + ',' + p[1] + ' h28 M' + p[0] + ',' + (p[1] - 14) + ' v28" stroke="#9CD0F0" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + (i ? 52 : -38)) + '" text-anchor="middle" fill="#fff" font-size="15" font-family="Carlito,Calibri,sans-serif">' + ['Hub', 'Head office', 'Depot'][i] + '</text>').join('') +
+    '<text x="340" y="178" text-anchor="middle" fill="#F6C453" font-size="15" font-family="ui-monospace,Menlo,Consolas,monospace">O 192.168.3.0/24</text>'; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const grid = document.getElementById('grid');
 for (const c of COURSES){
@@ -114,6 +130,13 @@ for (const c of COURSES){
     '<div class="facts"><span><b>' + c.lessons + '</b> interactive lessons</span><span><b>' + c.minutes + ' min</b> narrated</span><span><b>' + c.sims + '</b> simulators</span><span><b>' + c.quiz + '</b> quiz questions</span><span><b>Lab:</b> ' + esc(c.lab_title) + '</span></div>' +
     '<div class="go"><span>' + (done && done < c.items ? 'Continue the course' : 'Open the course') + ' →</span><span class="' + st[1] + '">' + esc(st[0]) + '</span></div></div>';
   grid.append(a);
+}
+const prog = document.getElementById('prog');
+if (PROGRAMS.length) prog.insertAdjacentHTML('beforeend', '<h2>Programmes</h2>');
+for (const p of PROGRAMS){
+  const a = document.createElement('a'); a.className = 'pcard'; a.href = p.id + '/';
+  a.innerHTML = '<div><div class="eyebrow">' + esc(p.exam) + ' · exam preparation</div><h3>' + esc(p.title) + '</h3><p>' + esc(p.strap) + '. ' + esc(p.state) + '</p><ul>' + p.facts.map(f => '<li><b>' + esc(f[0]) + '</b> ' + esc(f[1]) + '</li>').join('') + '</ul></div><span class="pgo">Open the programme →</span>';
+  prog.append(a);
 }
 </script>
 </body>
