@@ -280,6 +280,22 @@ code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:1px 
 .stage .tube{fill:#101D3A;stroke:#F6C453;stroke-width:3}
 .stage .okf{fill:#6FD39A}
 
+/* full screen: the whole player fills the screen (real full screen, or class xp-max where the browser refuses it) */
+.xp-fs{margin-left:auto}
+.xp.xp-full{--fit:calc((100vh - 196px) * 16 / 9);background:var(--bg);color:var(--text);padding:14px 18px;gap:10px;overflow:auto;box-sizing:border-box;width:100%;height:100%;align-items:center}
+@supports (height:100dvh){ .xp.xp-full{--fit:calc((100dvh - 196px) * 16 / 9)} }
+.xp.xp-max{position:fixed;inset:0;z-index:1000;height:auto}
+html.xp-lock,html.xp-lock body{overflow:hidden}
+.xp.xp-full > *{width:min(100%, var(--fit));flex:0 0 auto}
+.xp.xp-full > .xp-chapters{flex-wrap:nowrap}
+@media (min-width:1100px){
+  .xp.xp-full.xp-busy{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,30vw);grid-template-rows:auto auto auto auto 1fr;column-gap:18px;align-content:start;align-items:start;justify-items:center}
+  .xp.xp-full.xp-busy > *{grid-column:1}
+  .xp.xp-full.xp-busy > .xp-panel{grid-column:2;grid-row:1 / -1;width:100%;max-height:calc(100vh - 28px);overflow:auto;justify-self:stretch}
+}
+@media (max-height:520px){ .xp.xp-full{--fit:calc((100vh - 96px) * 16 / 9);padding:8px 12px;gap:6px} .xp.xp-full > .xp-chapters{display:none} .xp.xp-full > .xp-cap{min-height:0;padding:6px 10px;font-size:.9rem} }
+
+
 /* tutor */
 #tutorBtn{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--accent);color:#0D1524;border:0;border-radius:28px;padding:13px 20px 13px 16px;font-weight:700;display:flex;gap:9px;align-items:center;box-shadow:0 6px 20px rgba(13,21,36,.3);z-index:20}
 #tutor{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:min(430px,calc(100vw - 32px));height:min(640px,calc(100% - 40px));background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(13,21,36,.35);display:flex;flex-direction:column;z-index:30;overflow:hidden}
@@ -1045,7 +1061,41 @@ function makePlayer(L, hooks){
   items.forEach((it, i) => { if (it.chapter) chapters.append(h('button', {class:'xp-ch', type:'button', 'data-i':i, onclick:() => goto(i)}, it.chapter)); });
   const caption = h('p', {class:'xp-cap', 'aria-live':'off'}, 'Press Start the lesson. The narrator pauses whenever it is your turn.');
   const panel = h('div', {class:'xp-panel'});
-  const el = h('div', {class:'xp'}, stageWrap, h('div', {class:'xp-ctl'}, playBtn, capBtn, speed), chapters, caption, panel);
+  const fsBtn = h('button', {class:'btn ghost xp-fs', type:'button', 'aria-pressed':'false', title:'Full screen (press F)'}, 'Full screen');
+  const el = h('div', {class:'xp'}, stageWrap, h('div', {class:'xp-ctl'}, playBtn, capBtn, speed, fsBtn), chapters, caption, panel);
+
+  /* Full screen: the whole player (drawing, controls, captions and the exercise panel) fills the screen.
+     Where the browser refuses real full screen (an embedded frame, an iPhone), the player fills the window instead (class xp-max). */
+  const fsDoc = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+  const fsIs = () => el.classList.contains('xp-full');
+  function fsSync(){
+    const on = fsIs(); fsBtn.textContent = on ? 'Exit full screen' : 'Full screen'; fsBtn.setAttribute('aria-pressed', String(on));
+    document.documentElement.classList.toggle('xp-lock', el.classList.contains('xp-max'));
+  }
+  function fsSet(on){
+    if (on === fsIs()) return;
+    if (on){
+      el.classList.add('xp-full'); const req = el.requestFullscreen || el.webkitRequestFullscreen; let p = null;
+      try { p = req ? req.call(el) : null; } catch(_){ p = null; }
+      if (p && p.catch) p.catch(() => { if (fsIs()){ el.classList.add('xp-max'); fsSync(); } });
+      setTimeout(() => { if (fsIs() && fsDoc() !== el){ el.classList.add('xp-max'); fsSync(); } }, 450);
+    } else {
+      if (fsDoc() === el){ const ex = document.exitFullscreen || document.webkitExitFullscreen; try { ex.call(document); } catch(_){} }
+      el.classList.remove('xp-full', 'xp-max'); el.scrollTop = 0;
+    }
+    fsSync();
+  }
+  const fsChange = () => { if (fsDoc() === el){ el.classList.remove('xp-max'); el.classList.add('xp-full'); } else if (!el.classList.contains('xp-max')) el.classList.remove('xp-full'); fsSync(); };
+  const fsKey = e => {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return; const t = e.target, typing = t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) && t.type !== 'checkbox' && t.type !== 'radio';
+    if (e.key === 'Escape' && el.classList.contains('xp-max')){ fsSet(false); return; }
+    if ((e.key === 'f' || e.key === 'F') && !typing && (fsIs() || el.contains(t) || t === document.body)){ e.preventDefault(); fsSet(!fsIs()); }
+  };
+  fsBtn.addEventListener('click', () => fsSet(!fsIs()));
+  document.addEventListener('fullscreenchange', fsChange); document.addEventListener('webkitfullscreenchange', fsChange); document.addEventListener('keydown', fsKey);
+  /* While an exercise or the end card is open, the panel gets its own column in full screen (or is scrolled into view on a narrow screen). */
+  new MutationObserver(() => { const busy = panel.childNodes.length > 0; el.classList.toggle('xp-busy', busy);
+    if (fsIs()){ if (!busy) el.scrollTop = 0; else if (el.clientWidth < 1100 && panel.scrollIntoView) setTimeout(() => panel.scrollIntoView({block:'nearest'}), 60); } }).observe(panel, {childList:true});
 
   function prep(){
     sceneG.querySelectorAll('.draw').forEach(e => {
@@ -1220,8 +1270,9 @@ function makePlayer(L, hooks){
   speed.addEventListener('change', () => { audio.playbackRate = +speed.value; });
   const pst = L.x.poster || ['hook', 3]; setScene(pst[0], pst[1], true);
   if (playerCleanup) playerCleanup();
-  playerCleanup = () => { cancelAnimationFrame(raf); stopFx(); audio.pause(); phase = 'idle'; };
-  el._dbg = {audio, peek:(s, st) => setScene(s, st, true), sim:(id) => { curSim = SIMS[id](simApi); curSim.reset(); return curSim; }};
+  playerCleanup = () => { cancelAnimationFrame(raf); stopFx(); audio.pause(); phase = 'idle'; fsSet(false);
+    document.removeEventListener('fullscreenchange', fsChange); document.removeEventListener('webkitfullscreenchange', fsChange); document.removeEventListener('keydown', fsKey); };
+  el._dbg = {audio, fs:fsSet, peek:(s, st) => setScene(s, st, true), sim:(id) => { curSim = SIMS[id](simApi); curSim.reset(); return curSim; }};
   return {el, goto};
 }
 
